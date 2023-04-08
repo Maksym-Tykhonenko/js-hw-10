@@ -6,9 +6,8 @@ const DEBOUNCE_DELAY = 1500;
 
 const refs = {
     input: document.querySelector('#search-box'),
-    pokemonList: document.querySelector('.country-list'),
-    pokemonInfo: document.querySelector('.country-info'),
-    btn: document.querySelector('.btn'),
+    pokemonList: document.querySelector('.pokemon-list'),
+    pokemonInfo: document.querySelector('.pokemon-info'),
 };
 
 refs.input.addEventListener('input', debounce(searchPokemon, DEBOUNCE_DELAY));
@@ -32,7 +31,7 @@ function renderPokemon (pokemon) {
         sprites,
         name,
         height, weight,
-         base_experience,
+        base_experience,
         id
     } = pokemon;
 
