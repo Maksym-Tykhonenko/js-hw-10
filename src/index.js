@@ -1,6 +1,8 @@
 import './css/styles.css';
 import debounce from 'lodash.debounce';
-import {fetchPokemonById, fetchPokemonList } from './fetchpokemon';
+//import { fetchPokemonById, fetchPokemonList } from './fetchpokemon';
+import NewPokemonApiService from './pokemon-service';
+
 
 const DEBOUNCE_DELAY = 1500;
 
@@ -9,35 +11,50 @@ const refs = {
     btn: document.querySelector('.poke-list'),
     pokemonList: document.querySelector('.pokemon-list'),
     pokemonInfo: document.querySelector('.pokemon-info'),
+    loadMoreBtn: document.querySelector('.load-more'),
 };
 
 refs.input.addEventListener('input', debounce(searchPokemonFromInput, DEBOUNCE_DELAY));
 refs.btn.addEventListener('click', searchPokemonList);
 refs.pokemonList.addEventListener('click', searchPokemonByName);
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
+
+const newPokemonApiService = new NewPokemonApiService();
 
 searchPokemonList();
+////////////////////////////////////////
 
 //////////////////////function search//////////////////
 function searchPokemonList() {
 
-    fetchPokemonList().then(list => {
+    newPokemonApiService.page = 0;  
+    newPokemonApiService.fetchPokemonList().then(list => {
         //console.log(list);
-        renderPokemonList(list);
-    });
+        visibleBtn();
+
+        pokemonInfoReset();
+        pokemonListReset();
+
+        renderPokemonList(list)
+    })
 };
 
 function searchPokemonFromInput(event) {
     event.preventDefault();
-    const pokemonId = event.target.value;
+    let pokemonId = event.target.value;
+    //console.log(pokemonId);
 
-    pokemonInfoReset();
-    //pikachu, bulbasaur, golduck
-    fetchPokemonById(pokemonId).then(pokemon => {
-  
+    newPokemonApiService.fetchPokemonByIdOrName(pokemonId).then(pokemon => { 
+        //console.log(pokemon);
+        pokemonInfoReset();
+        pokemonListReset();
         renderPokemon(pokemon);
         inputReset(event);
 
+        invisibleBtn();
+        
     });
+
 };
 
 function searchPokemonByName(event) {
@@ -48,12 +65,13 @@ function searchPokemonByName(event) {
 
     pokemonInfoReset();
 
-    fetchPokemonById(pokemonName).then(pokemon => {
+    newPokemonApiService.fetchPokemonByIdOrName(pokemonName).then(pokemon => {
+        pokemonListReset();
         renderPokemon(pokemon);
+
+        invisibleBtn();
     })
 };
-
-
 
 /////////////////////////function render////////////////
 function renderPokemon (pokemon) {
@@ -67,36 +85,47 @@ function renderPokemon (pokemon) {
 
     const markup = `<img  src='${sprites.front_default}' alt='${name}' height='200' class="info-flag">
         <img  src='${sprites.back_default}' alt='${name}' height='200' class="info-flag">
-        <p>ІМ'Я: ${name}</p>
+        <div><p>ІМ'Я: ${name}</p>
         <p>ЗРІСТ: ${height}</p>
         <p>ВАГА: ${weight}</p>
         <p>СИЛА: ${base_experience}</p>
-        <p>ID: ${id}</p>
+        <p>ID: ${id}</p></div>
         `;
 
     refs.pokemonInfo.insertAdjacentHTML('afterbegin', markup);
 };
 
 function renderPokemonList(list) {
-    //console.log(list.results);
-    let namber = 0;
-    const { results } = list;
     
-    const markupList = results.map(({ name }) => {
-        return `<li>
-            <p>Name: <a href="#" class="pokemon-name">${name}</a></p>
-            <p>Namber: ${namber += 1}</p>
-        </li>`
+    const markupList = list.map(({ name }) => {
+        return `<li class="pokemon-item">
+            <a href="#" class="pokemon-name">${name}</a></li>`
     }).join('');
 
-    refs.pokemonList.insertAdjacentHTML('afterbegin', markupList);
-};
-////////////////////function reset////////////
-function inputReset (event) {
-    event.target.value = ''
+    refs.pokemonList.insertAdjacentHTML('beforeend', markupList);
 };
 
+////////////////////function reset////////////
+function inputReset (event) {
+    event.target.value = '';
+};
 function pokemonInfoReset() {
     refs.pokemonInfo.innerHTML = '';
+};
+function pokemonListReset() {
     refs.pokemonList.innerHTML = '';
+};
+//////////////////////////////////////////
+function onLoadMore() {
+    newPokemonApiService.fetchPokemonList().then(list => {
+        //console.log(list);
+        renderPokemonList(list);
+    })
+};
+/////////////////////////////////////////////
+function invisibleBtn() {
+    refs.loadMoreBtn.classList.add("none-btn");
+};
+function visibleBtn() {
+    refs.loadMoreBtn.classList.remove("none-btn");
 };
