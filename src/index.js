@@ -4,7 +4,7 @@ import debounce from 'lodash.debounce';
 import NewPokemonApiService from './pokemon-service';
 
 
-const DEBOUNCE_DELAY = 1500;
+const DEBOUNCE_DELAY = 1000;
 
 const refs = {
     input: document.querySelector('#search-box'),
@@ -17,17 +17,16 @@ const refs = {
 refs.input.addEventListener('input', debounce(searchPokemonFromInput, DEBOUNCE_DELAY));
 refs.btn.addEventListener('click', searchPokemonList);
 refs.pokemonList.addEventListener('click', searchPokemonByName);
-refs.loadMoreBtn.addEventListener('click', onLoadMore);
+refs.loadMoreBtn.addEventListener('click', searchOnLoadMore);
 
 const newPokemonApiService = new NewPokemonApiService();
-
+//console.log(newPokemonApiService)
 searchPokemonList();
-////////////////////////////////////////
 
 //////////////////////function search//////////////////
 function searchPokemonList() {
 
-    newPokemonApiService.page = 0;  
+    newPokemonApiService.resetPage();
     newPokemonApiService.fetchPokemonList().then(list => {
         //console.log(list);
         visibleBtn();
@@ -36,24 +35,24 @@ function searchPokemonList() {
         pokemonListReset();
 
         renderPokemonList(list)
-    })
+    });
 };
 
 function searchPokemonFromInput(event) {
     event.preventDefault();
-    let pokemonId = event.target.value;
-    //console.log(pokemonId);
+    let pokemonId = event.target.value.toLowerCase()
+    console.log(pokemonId);
+    //GRIMER
+    newPokemonApiService.fetchPokemonByIdOrName(pokemonId)
+        .then(pokemon => { 
+            //console.log(pokemon);
+            pokemonInfoReset();
+            pokemonListReset();
+            renderPokemon(pokemon);
+            inputReset(event);
 
-    newPokemonApiService.fetchPokemonByIdOrName(pokemonId).then(pokemon => { 
-        //console.log(pokemon);
-        pokemonInfoReset();
-        pokemonListReset();
-        renderPokemon(pokemon);
-        inputReset(event);
-
-        invisibleBtn();
-        
-    });
+            invisibleBtn();
+        });
 
 };
 
@@ -65,14 +64,21 @@ function searchPokemonByName(event) {
 
     pokemonInfoReset();
 
-    newPokemonApiService.fetchPokemonByIdOrName(pokemonName).then(pokemon => {
-        pokemonListReset();
-        renderPokemon(pokemon);
+    newPokemonApiService.fetchPokemonByIdOrName(pokemonName)
+        .then(pokemon => {
+            pokemonListReset();
+            renderPokemon(pokemon);
 
-        invisibleBtn();
-    })
+            invisibleBtn();
+        });
 };
 
+function searchOnLoadMore() {
+    newPokemonApiService.fetchPokemonList().then(list => {
+        //console.log(list);
+        renderPokemonList(list);
+    })
+};
 /////////////////////////function render////////////////
 function renderPokemon (pokemon) {
     const {
@@ -82,10 +88,10 @@ function renderPokemon (pokemon) {
         base_experience,
         id
     } = pokemon;
-
+    
     const markup = `<img  src='${sprites.front_default}' alt='${name}' height='200' class="info-flag">
         <img  src='${sprites.back_default}' alt='${name}' height='200' class="info-flag">
-        <div><p>ІМ'Я: ${name}</p>
+        <div><p>ІМ'Я: ${name.toUpperCase()}</p>
         <p>ЗРІСТ: ${height}</p>
         <p>ВАГА: ${weight}</p>
         <p>СИЛА: ${base_experience}</p>
@@ -115,17 +121,24 @@ function pokemonInfoReset() {
 function pokemonListReset() {
     refs.pokemonList.innerHTML = '';
 };
-//////////////////////////////////////////
-function onLoadMore() {
-    newPokemonApiService.fetchPokemonList().then(list => {
-        //console.log(list);
-        renderPokemonList(list);
-    })
-};
-/////////////////////////////////////////////
+
+/////////////////////function for load more btn////////////////////////
 function invisibleBtn() {
     refs.loadMoreBtn.classList.add("none-btn");
 };
 function visibleBtn() {
     refs.loadMoreBtn.classList.remove("none-btn");
 };
+//////////////////////////////////////////////////////
+
+//function fetchCountrie() {
+//    //fetch(`https://restcountries.com/v3.1/name/${name}`)
+//        fetch(`https://restcountries.com/v3.1/currency/hryvnia`)
+//        .then((res) => res.json())
+//        .then((data) => {
+//            console.log(data);
+//        });
+//};
+////fetchCountrie('deutschland');
+////fetchCountrie('ukrai');
+//fetchCountrie();
