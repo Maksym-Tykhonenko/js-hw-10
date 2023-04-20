@@ -40,7 +40,7 @@ function searchPokemonList() {
 
 function searchPokemonFromInput(event) {
     event.preventDefault();
-    let pokemonId = event.target.value.toLowerCase()
+    let pokemonId = event.target.value.toLowerCase().trim()
     console.log(pokemonId);
     //GRIMER
     newPokemonApiService.fetchPokemonByIdOrName(pokemonId)
@@ -131,14 +131,13 @@ function visibleBtn() {
 };
 //////////////////////////////////////////////////////
 
-//function fetchCountrie() {
-//    //fetch(`https://restcountries.com/v3.1/name/${name}`)
-//        fetch(`https://restcountries.com/v3.1/currency/hryvnia`)
-//        .then((res) => res.json())
-//        .then((data) => {
-//            console.log(data);
-//        });
-//};
-////fetchCountrie('deutschland');
-////fetchCountrie('ukrai');
-//fetchCountrie();
+async function fetchCountrie(currency) {
+    const res = await fetch(`https://restcountries.com/v3.1/currency/${currency}`);
+    const countrie = await res.json();
+    console.log(countrie)
+    return countrie;
+};
+//fetchCountrie('deutschland');
+//fetchCountrie('ukrai');
+fetchCountrie('hryvnia');
+fetchCountrie('euro');
