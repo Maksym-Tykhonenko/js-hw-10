@@ -131,13 +131,4 @@ function visibleBtn() {
 };
 //////////////////////////////////////////////////////
 
-async function fetchCountrie(currency) {
-    const res = await fetch(`https://restcountries.com/v3.1/currency/${currency}`);
-    const countrie = await res.json();
-    console.log(countrie)
-    return countrie;
-};
-//fetchCountrie('deutschland');
-//fetchCountrie('ukrai');
-fetchCountrie('hryvnia');
-fetchCountrie('euro');
+
